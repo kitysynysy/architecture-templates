@@ -17,10 +17,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Konfiguracja Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Generowanie struktury projektu i kompilacja APK
+      - name: Generowanie plików projektu
         run: |
           mkdir -p app/src/main/java/com/teatr/stagetechnician
           mkdir -p app/src/main/res/xml
@@ -48,33 +45,30 @@ jobs:
 
           cat << 'EOF' > build.gradle.kts
           plugins {
-              id("com.android.application") version "8.7.2" apply false
-              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-              id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
+              id("com.android.application") version "8.5.0" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
           }
           EOF
 
           cat << 'EOF' > gradle.properties
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
-          android.nonTransitiveRClass=true
           EOF
 
           cat << 'EOF' > app/build.gradle.kts
           plugins {
               id("com.android.application")
               id("org.jetbrains.kotlin.android")
-              id("org.jetbrains.kotlin.plugin.compose")
           }
 
           android {
               namespace = "com.teatr.stagetechnician"
-              compileSdk = 35
+              compileSdk = 34
 
               defaultConfig {
                   applicationId = "com.teatr.stagetechnician"
                   minSdk = 26
-                  targetSdk = 35
+                  targetSdk = 34
                   versionCode = 1
                   versionName = "1.0"
               }
@@ -86,19 +80,14 @@ jobs:
               kotlinOptions {
                   jvmTarget = "17"
               }
-              buildFeatures {
-                  compose = true
-              }
           }
 
           dependencies {
-              val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
-              implementation(composeBom)
+              implementation("androidx.core:core-ktx:1.13.1")
+              implementation("androidx.activity:activity-compose:1.9.0")
+              implementation(platform("androidx.compose:compose-bom:2024.05.00"))
               implementation("androidx.compose.ui:ui")
               implementation("androidx.compose.material3:material3")
-              implementation("androidx.compose.ui:ui-tooling-preview")
-              implementation("androidx.activity:activity-compose:1.9.3")
-              implementation("androidx.core:core-ktx:1.13.1")
           }
           EOF
 
@@ -142,10 +131,10 @@ jobs:
           </manifest>
           EOF
 
-          gradle wrapper --gradle-version 8.9
+          gradle wrapper --gradle-version 8.7
           ./gradlew assembleDebug
 
-      - name: Przygotuj plik APK do pobrania
+      - name: Zapisz plik APK
         uses: actions/upload-artifact@v4
         with:
           name: Asystent-Sceny-Instalator
